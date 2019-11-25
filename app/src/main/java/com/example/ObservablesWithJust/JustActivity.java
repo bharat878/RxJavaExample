@@ -10,6 +10,8 @@ import android.widget.Button;
 import com.example.ObservablesWithJust.model.model;
 import com.example.rxjavaexample.R;
 
+import io.reactivex.Maybe;
+import io.reactivex.MaybeObserver;
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.Scheduler;
@@ -47,9 +49,17 @@ public class JustActivity extends AppCompatActivity {
 
                 bookSingle.observeOn(Schedulers.io()).subscribeOn(AndroidSchedulers.mainThread())
                         .subscribe(bookSingleObserver);
+
+                Maybe<String> maybeName = getMaybeName();
+
+                MaybeObserver<String> maybeObserver = getMaybeObserver();
+
+                maybeName.observeOn(Schedulers.io()).subscribeOn(AndroidSchedulers.mainThread())
+                        .subscribe(maybeObserver);
             }
         });
     }
+
 
     private Observable<String> getBookNameObservable() {
         return Observable.just("C","C++", "Java", "Android", "Nodejs");
@@ -111,6 +121,37 @@ public class JustActivity extends AppCompatActivity {
         };
     }
 
+
+    private Maybe<String> getMaybeName() {
+        return Maybe.just("Bharat");
+    }
+
+    private MaybeObserver<String> getMaybeObserver() {
+        return new MaybeObserver<String>() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                Log.d("maybe","onSubscription");
+            }
+
+            @Override
+            public void onSuccess(String s) {
+                Log.d("maybe","onSuccess: "+s);
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.d("maybe","onError: "+e.getMessage());
+
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d("maybe","onComplete");
+
+            }
+        };
+    }
 
     @Override
     protected void onDestroy() {
