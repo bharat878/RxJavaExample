@@ -10,6 +10,8 @@ import android.widget.Button;
 import com.example.ObservablesWithJust.model.model;
 import com.example.rxjavaexample.R;
 
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import io.reactivex.MaybeObserver;
 import io.reactivex.Observable;
@@ -20,6 +22,7 @@ import io.reactivex.SingleObserver;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
+import io.reactivex.subscribers.ResourceSubscriber;
 
 public class JustActivity extends AppCompatActivity {
 
@@ -35,29 +38,26 @@ public class JustActivity extends AppCompatActivity {
         clickBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Observable<String> booknameObservable = getBookNameObservable();
 
-                Observer<String> booknameobserver = getBookNameObserver();
+                observable();
 
-                booknameObservable.observeOn(Schedulers.io())
-                        .subscribeOn(AndroidSchedulers.mainThread())
-                        .subscribe(booknameobserver);
+                singleObservable();
 
-                Single<model> bookSingle = getSingleBook();
+                maybeObservable();
 
-                SingleObserver<model> bookSingleObserver = getSingleBookObserver();
-
-                bookSingle.observeOn(Schedulers.io()).subscribeOn(AndroidSchedulers.mainThread())
-                        .subscribe(bookSingleObserver);
-
-                Maybe<String> maybeName = getMaybeName();
-
-                MaybeObserver<String> maybeObserver = getMaybeObserver();
-
-                maybeName.observeOn(Schedulers.io()).subscribeOn(AndroidSchedulers.mainThread())
-                        .subscribe(maybeObserver);
+                flowable();
             }
         });
+    }
+
+    private void observable() {
+        Observable<String> booknameObservable = getBookNameObservable();
+
+        Observer<String> booknameobserver = getBookNameObserver();
+
+        booknameObservable.observeOn(Schedulers.io())
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .subscribe(booknameobserver);
     }
 
 
@@ -94,6 +94,16 @@ public class JustActivity extends AppCompatActivity {
         };
     }
 
+
+    private void singleObservable() {
+        Single<model> bookSingle = getSingleBook();
+
+        SingleObserver<model> bookSingleObserver = getSingleBookObserver();
+
+        bookSingle.observeOn(Schedulers.io()).subscribeOn(AndroidSchedulers.mainThread())
+                .subscribe(bookSingleObserver);
+    }
+
     private Single<model> getSingleBook() {
         return Single.just(new model("java"));
     }
@@ -119,6 +129,16 @@ public class JustActivity extends AppCompatActivity {
 
             }
         };
+    }
+
+    private void maybeObservable() {
+
+        Maybe<String> maybeName = getMaybeName();
+
+        MaybeObserver<String> maybeObserver = getMaybeObserver();
+
+        maybeName.observeOn(Schedulers.io()).subscribeOn(AndroidSchedulers.mainThread())
+                .subscribe(maybeObserver);
     }
 
 
@@ -152,6 +172,55 @@ public class JustActivity extends AppCompatActivity {
             }
         };
     }
+
+//    private Flowable<Integer> getCountFlowable() {
+//
+//        return Flowable.range(1,1000);
+//    }
+
+    private void flowable() {
+
+//                Flowable<Integer> countFlowable = getCountFlowable();
+
+        Observable<Integer> countFlowable = getCountFlowable();
+
+
+        ResourceSubscriber<Integer> countFlowableSubscriber = getCountFlowableSubscriber();
+
+        //countFlowable.observeOn(Schedulers.io()).subscribeOn(AndroidSchedulers.mainThread())
+        //    .subscribe(countFlowableSubscriber);
+
+        countFlowable.toFlowable(BackpressureStrategy.BUFFER).observeOn(Schedulers.io())
+                .subscribe(countFlowableSubscriber);
+    }
+
+
+    private Observable<Integer> getCountFlowable() {
+        return Observable.range(1,1000);
+    }
+
+
+    private ResourceSubscriber<Integer> getCountFlowableSubscriber() {
+        return new ResourceSubscriber<Integer>() {
+            @Override
+            public void onNext(Integer integer) {
+                Log.d("flowable", "Integer: "+integer);
+            }
+
+            @Override
+            public void onError(Throwable t) {
+                Log.d("flowable", "Throwable: "+t.getMessage());
+
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d("flowable", "onComplete");
+
+            }
+        };
+    }
+
 
     @Override
     protected void onDestroy() {
