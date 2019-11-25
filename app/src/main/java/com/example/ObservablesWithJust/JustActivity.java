@@ -19,7 +19,7 @@ import io.reactivex.schedulers.Schedulers;
 public class JustActivity extends AppCompatActivity {
 
     private Button clickBtn;
-
+    private Disposable disposable;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,6 +49,8 @@ public class JustActivity extends AppCompatActivity {
         return new Observer<String>() {
             @Override
             public void onSubscribe(Disposable d) {
+                disposable = d;
+
                 Log.d("justCheck", "onSubscribe");
             }
 
@@ -72,5 +74,13 @@ public class JustActivity extends AppCompatActivity {
         };
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
 
+        disposable.dispose();
+        Log.d("justCheck", "disposed");
+
+
+    }
 }
