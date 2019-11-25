@@ -11,6 +11,10 @@ import com.example.ObservablesWithJust.model.model;
 import com.example.rxjavaexample.R;
 
 import io.reactivex.BackpressureStrategy;
+import io.reactivex.Completable;
+import io.reactivex.CompletableEmitter;
+import io.reactivex.CompletableObserver;
+import io.reactivex.CompletableOnSubscribe;
 import io.reactivex.Flowable;
 import io.reactivex.Maybe;
 import io.reactivex.MaybeObserver;
@@ -46,6 +50,8 @@ public class JustActivity extends AppCompatActivity {
                 maybeObservable();
 
                 flowable();
+
+                completable();
             }
         });
     }
@@ -219,6 +225,34 @@ public class JustActivity extends AppCompatActivity {
 
             }
         };
+    }
+
+    private void completable() {
+        Completable completable = Completable.create(new CompletableOnSubscribe() {
+            @Override
+            public void subscribe(CompletableEmitter emitter) throws Exception {
+                emitter.onComplete();
+            }
+        });
+
+        completable.observeOn(Schedulers.io()).subscribe(new CompletableObserver() {
+            @Override
+            public void onSubscribe(Disposable d) {
+                Log.d("comletable", "onSubscribe");
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d("comletable", "complete");
+
+            }
+
+            @Override
+            public void onError(Throwable e) {
+                Log.d("comletable", e.getMessage());
+
+            }
+        });
     }
 
 
